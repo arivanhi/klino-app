@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import SekolahTab from './SekolahTab';
 import GuruTab from './GuruTab';
 import SupervisorTab from './SupervisorTab';
@@ -9,6 +9,14 @@ import SiswaTab from './SiswaTab';
 
 export default function DataMasterPage() {
   const [activeTab, setActiveTab] = useState('sekolah');
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get('tab');
+    if (tab) {
+      setActiveTab(tab);
+    }
+  }, []);
 
   const tabs = [
     { id: 'sekolah', label: 'Data Sekolah' },

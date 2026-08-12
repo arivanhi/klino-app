@@ -87,7 +87,6 @@ export default function Home() {
                   name="username" 
                   className="login-input" 
                   placeholder="Masukkan NPP atau NIP Anda" 
-                  defaultValue="adminKlino"
                   required 
                 />
               </div>
@@ -101,7 +100,6 @@ export default function Home() {
                   name="password" 
                   className="login-input" 
                   placeholder="••••••••••••" 
-                  defaultValue="klino123"
                   required 
                 />
                 <button 

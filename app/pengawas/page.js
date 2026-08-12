@@ -1,54 +1,98 @@
-import DashboardActions from './DashboardActions';
 import { PrismaClient } from '@prisma/client';
+import DashboardClient from './DashboardClient';
 
 const prisma = new PrismaClient();
 
 export const dynamic = 'force-dynamic';
 
 export default async function PengawasDashboard() {
-  const totalSchools = await prisma.sekolah.count();
-  const totalStudents = await prisma.siswa.count();
+  const activeSemester = await prisma.semester.findFirst({ where: { isActive: true } });
   
-  const numeracyAgg = await prisma.nilaiNumerasi.aggregate({
-    _avg: { score: true }
+  // Fetch schools with students and scores
+  const schoolsData = await prisma.sekolah.findMany({
+    include: {
+      siswa: {
+        include: {
+          tugasLit: true,
+          nilaiNum: true
+        }
+      }
+    }
   });
-  const avgNumeracy = numeracyAgg._avg.score?.toFixed(1) || '0.0';
 
-  const literacyAgg = await prisma.penugasanLiterasi.aggregate({
-    _avg: { score: true }
+  let globalLitTotal = 0, globalLitCount = 0;
+  let globalNumTotal = 0, globalNumCount = 0;
+  let clinicStudentsCount = 0;
+
+  const processedSchools = schoolsData.map(school => {
+    let schoolLitTotal = 0, schoolLitCount = 0;
+    let schoolNumTotal = 0, schoolNumCount = 0;
+    let participantStudents = 0;
+
+    school.siswa.forEach(student => {
+      let studentLitSum = 0, studentLitCount = 0;
+      let studentNumSum = 0, studentNumCount = 0;
+
+      // Literacy: taking all available assignments as requested
+      student.tugasLit.forEach(t => {
+        if (t.score !== null) {
+          studentLitSum += t.score;
+          studentLitCount++;
+          globalLitTotal += t.score;
+          globalLitCount++;
+        }
+      });
+
+      // Numeracy: filter by active semester if available
+      student.nilaiNum.forEach(n => {
+        if (activeSemester && (n.semester !== activeSemester.jenis || n.year !== activeSemester.tahunAjaran)) {
+          return; // Skip if not active semester
+        }
+        studentNumSum += n.score;
+        studentNumCount++;
+        globalNumTotal += n.score;
+        globalNumCount++;
+      });
+
+      const avgStudentLit = studentLitCount > 0 ? studentLitSum / studentLitCount : null;
+      const avgStudentNum = studentNumCount > 0 ? studentNumSum / studentNumCount : null;
+
+      if (avgStudentLit !== null || avgStudentNum !== null) {
+        participantStudents++;
+      }
+
+      if ((avgStudentLit !== null && avgStudentLit < 60) || (avgStudentNum !== null && avgStudentNum < 60)) {
+        clinicStudentsCount++;
+      }
+
+      schoolLitTotal += studentLitSum;
+      schoolLitCount += studentLitCount;
+      schoolNumTotal += studentNumSum;
+      schoolNumCount += studentNumCount;
+    });
+
+    const avgLit = schoolLitCount > 0 ? (schoolLitTotal / schoolLitCount).toFixed(1) : '0.0';
+    const avgNum = schoolNumCount > 0 ? (schoolNumTotal / schoolNumCount).toFixed(1) : '0.0';
+
+    return {
+      id: school.id,
+      name: school.name,
+      participantStudents,
+      avgLit,
+      avgNum,
+      status: (parseFloat(avgLit) < 60 || parseFloat(avgNum) < 60) ? 'Perhatian' : 'Stabil'
+    };
   });
-  const avgLiteracy = literacyAgg._avg.score?.toFixed(1) || '0.0';
 
-  return (
-    <div className="animate-fade-in">
-      <header style={{ marginBottom: '32px' }}>
-        <h1 style={{ fontSize: '2.5rem', color: 'var(--primary-color)', marginBottom: '8px' }}>Dashboard Koor Pemantau</h1>
-        <p style={{ color: 'var(--text-dark)', opacity: 0.8 }}>Welcome back! Here is the latest overview of KLiNO platform.</p>
-      </header>
+  const avgGlobalLit = globalLitCount > 0 ? (globalLitTotal / globalLitCount).toFixed(1) : '0.0';
+  const avgGlobalNum = globalNumCount > 0 ? (globalNumTotal / globalNumCount).toFixed(1) : '0.0';
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '24px', marginBottom: '40px' }}>
-        <div className="glass-card" style={{ padding: '24px', textAlign: 'center' }}>
-          <h3 style={{ color: 'var(--text-dark)', opacity: 0.7, fontSize: '1rem' }}>Total Schools</h3>
-          <p style={{ fontSize: '3rem', fontWeight: '700', color: 'var(--primary-color)', margin: '8px 0' }}>{totalSchools}</p>
-        </div>
-        <div className="glass-card" style={{ padding: '24px', textAlign: 'center' }}>
-          <h3 style={{ color: 'var(--text-dark)', opacity: 0.7, fontSize: '1rem' }}>Total Students</h3>
-          <p style={{ fontSize: '3rem', fontWeight: '700', color: 'var(--secondary-color)', margin: '8px 0' }}>{totalStudents}</p>
-        </div>
-        <div className="glass-card" style={{ padding: '24px', textAlign: 'center' }}>
-          <h3 style={{ color: 'var(--text-dark)', opacity: 0.7, fontSize: '1rem' }}>Avg. Numeracy Score</h3>
-          <p style={{ fontSize: '3rem', fontWeight: '700', color: 'var(--accent-color)', margin: '8px 0' }}>{avgNumeracy}</p>
-        </div>
-        <div className="glass-card" style={{ padding: '24px', textAlign: 'center' }}>
-          <h3 style={{ color: 'var(--text-dark)', opacity: 0.7, fontSize: '1rem' }}>Avg. Literacy Score</h3>
-          <p style={{ fontSize: '3rem', fontWeight: '700', color: '#F59E0B', margin: '8px 0' }}>{avgLiteracy}</p>
-        </div>
-      </div>
+  const globalStats = {
+    totalSchools: schoolsData.length,
+    avgLit: avgGlobalLit,
+    avgNum: avgGlobalNum,
+    clinicStudents: clinicStudentsCount
+  };
 
-      <div className="glass" style={{ padding: '32px' }}>
-        <h2 style={{ marginBottom: '24px', color: 'var(--text-dark)' }}>Quick Actions</h2>
-        <DashboardActions />
-      </div>
-    </div>
-  );
+  return <DashboardClient schools={processedSchools} globalStats={globalStats} />;
 }

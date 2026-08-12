@@ -8,10 +8,12 @@ import {
   BookOpen, 
   Calculator, 
   BarChart2,
+  Settings,
   LogOut 
 } from 'lucide-react';
 import { getSession } from 'next-auth/react';
 import { useState, useEffect } from 'react';
+import { Toaster } from 'react-hot-toast';
 
 export default function PengawasLayout({ children }) {
   const pathname = usePathname();
@@ -21,6 +23,7 @@ export default function PengawasLayout({ children }) {
     { name: 'Literacy', href: '/pengawas/literasi', icon: BookOpen },
     { name: 'Numeracy', href: '/pengawas/numerasi', icon: Calculator },
     { name: 'Laporan KLiNO', href: '/pengawas/laporan', icon: BarChart2 },
+    { name: 'Setelan', href: '/pengawas/setelan', icon: Settings },
   ];
 
   const [session, setSession] = useState(null);
@@ -41,6 +44,7 @@ export default function PengawasLayout({ children }) {
 
   return (
     <div className="admin-layout">
+      <Toaster position="top-right" />
       {/* Sidebar */}
       <aside className="admin-sidebar" style={{ backgroundColor: '#f3f4f6' }}>
         <div className="sidebar-header">

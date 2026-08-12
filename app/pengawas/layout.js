@@ -24,11 +24,17 @@ export default function PengawasLayout({ children }) {
   ];
 
   const [session, setSession] = useState(null);
+  const [dynamicTitle, setDynamicTitle] = useState('');
+
   useEffect(() => {
     getSession().then(sess => setSession(sess));
+
+    const handleTitleChange = (e) => setDynamicTitle(e.detail);
+    window.addEventListener('setTopbarTitle', handleTitleChange);
+    return () => window.removeEventListener('setTopbarTitle', handleTitleChange);
   }, []);
 
-  const currentPage = navItems.find(item => item.href === pathname)?.name || 'Dashboard Utama';
+  const currentPage = dynamicTitle || (navItems.find(item => item.href === pathname)?.name || 'Dashboard Utama');
   const userName = session?.user?.name || 'User';
   const userRole = session?.user?.role || 'PENGAWAS';
   const userInitials = userName.substring(0, 2).toUpperCase();

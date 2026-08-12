@@ -1,0 +1,120 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  ADMIN
+  PENGAWAS
+  GURU
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  username  String   @unique
+  password  String
+  role      Role     @default(GURU)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  sekolah   Sekolah? @relation(fields: [sekolahId], references: [id])
+  sekolahId Int?
+}
+
+model Sekolah {
+  id          Int      @id @default(autoincrement())
+  name        String
+  npsn        String?  @unique
+  kecamatan   String?
+  address     String?
+  logoUrl     String?
+  users       User[]
+  mentors     Mentor[]
+  kelas       Kelas[]
+  siswa       Siswa[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Semester {
+  id          Int      @id @default(autoincrement())
+  tahunAjaran String   // e.g. "2023/2024"
+  jenis       String   // e.g. "Ganjil", "Genap"
+  isActive    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Mentor {
+  id          Int      @id @default(autoincrement())
+  name        String
+  type        String   // "Literasi" or "Numerasi"
+  sekolahId   Int
+  sekolah     Sekolah  @relation(fields: [sekolahId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Kelas {
+  id        Int      @id @default(autoincrement())
+  name      String
+  sekolahId Int
+  sekolah   Sekolah  @relation(fields: [sekolahId], references: [id])
+  siswa     Siswa[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Siswa {
+  id          Int      @id @default(autoincrement())
+  nis         String   @unique
+  name        String
+  kelasId     Int
+  kelas       Kelas    @relation(fields: [kelasId], references: [id])
+  sekolahId   Int
+  sekolah     Sekolah  @relation(fields: [sekolahId], references: [id])
+  nilaiNum    NilaiNumerasi[]
+  tugasLit    PenugasanLiterasi[]
+  tugasNum    PenugasanNumerasi[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model PenugasanLiterasi {
+  id        Int      @id @default(autoincrement())
+  siswaId   Int
+  siswa     Siswa    @relation(fields: [siswaId], references: [id])
+  title     String
+  fileUrl   String?
+  score     Float?
+  date      DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PenugasanNumerasi {
+  id        Int      @id @default(autoincrement())
+  siswaId   Int
+  siswa     Siswa    @relation(fields: [siswaId], references: [id])
+  title     String
+  fileUrl   String?
+  score     Float?
+  date      DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model NilaiNumerasi {
+  id        Int      @id @default(autoincrement())
+  siswaId   Int
+  siswa     Siswa    @relation(fields: [siswaId], references: [id])
+  score     Float
+  semester  String
+  year      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

@@ -189,6 +189,17 @@ export default function LiterasiClient({ schools }) {
                   <div style={{ width: '100%', height: '8px', backgroundColor: '#e5e7eb', borderRadius: '4px', overflow: 'hidden' }}>
                     <div style={{ width: `${Math.min(100, school.progress)}%`, height: '100%', backgroundColor: '#f59e0b', borderRadius: '4px' }}></div>
                   </div>
+
+                  <div style={{ marginTop: '16px', fontSize: '0.85rem', color: '#4b5563', backgroundColor: '#f9fafb', padding: '12px', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
+                    <div style={{ marginBottom: '6px', display: 'flex', gap: '8px' }}>
+                      <strong style={{ minWidth: '60px', color: '#374151' }}>Guru:</strong> 
+                      <span style={{ flex: 1 }} className="truncate" title={school.guruNames}>{school.guruNames}</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <strong style={{ minWidth: '60px', color: '#374151' }}>Mentor:</strong> 
+                      <span style={{ flex: 1 }} className="truncate" title={school.mentorNames}>{school.mentorNames}</span>
+                    </div>
+                  </div>
                 </div>
                 
                 <div style={{ padding: '24px', display: 'flex', justifyContent: 'space-between' }}>

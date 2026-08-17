@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
+import { authOptions } from '../../auth/[...nextauth]/route';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
@@ -7,9 +8,10 @@ const prisma = new PrismaClient();
 
 export async function PUT(req) {
   try {
-    const session = await getServerSession();
-    if (!session || !session.user || session.user.role !== 'PENGAWAS') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const session = await getServerSession(authOptions);
+    console.log("=== SESSION_DEBUG ===", session);
+    if (!session || !session.user || session.user.role?.toUpperCase() !== 'PENGAWAS') {
+      return NextResponse.json({ error: 'Unauthorized', sessionDebug: session }, { status: 401 });
     }
 
     // `session.user` might not have the DB id if not exposed in callbacks, 
@@ -45,7 +47,7 @@ export async function PUT(req) {
 
     // Check if new username is already taken by someone else
     const existingUser = await prisma.user.findUnique({ where: { username } });
-    if (existingUser && existingUser.id !== userId) {
+    if (existingUser && existingUser.id.toString() !== userId.toString()) {
       return NextResponse.json({ error: 'Username is already taken' }, { status: 400 });
     }
 
@@ -60,7 +62,7 @@ export async function PUT(req) {
     }
 
     await prisma.user.update({
-      where: { id: userId },
+      where: { id: parseInt(userId) },
       data: updateData,
     });
 

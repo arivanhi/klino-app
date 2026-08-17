@@ -53,7 +53,10 @@ Jika KLiNO App sudah terpasang di server dan Anda baru saja menerima pembaruan k
    git pull origin main
    ```
 
-3. **Rebuild Container**
+3. **Instalasi Paket Tambahan (Otomatis)**
+   Jika pembaruan membawa dependensi *package* baru (seperti `recharts` atau `react-hot-toast`), Anda tidak perlu menginstalnya manual. Proses `build` pada Docker akan mendeteksi dan menginstalnya secara otomatis.
+
+4. **Rebuild Container**
    Jalankan perintah berikut. Docker secara otomatis akan mem-build ulang container Next.js yang berubah, namun **tidak akan menghapus data di database** karena tersimpan di dalam *Docker Volume*.
    ```bash
    docker compose up -d --build
@@ -81,6 +84,16 @@ Jika KLiNO App sudah terpasang di server dan Anda baru saja menerima pembaruan k
 ---
 
 ## Changelog
+
+### [v1.2.0] - Modul Pengawas & Visualisasi Data
+**Ditambahkan:**
+- **Dashboard Pengawas:** UI modern dengan metrik statistik, *Top Cards*, serta fitur penyaringan (filter) dinamis untuk melihat performa per-Semester.
+- **Grafik Interaktif:** Integrasi pustaka grafik modern `recharts` untuk menampilkan tren "Nilai Mingguan" Literasi dan Numerasi siswa.
+- **Laporan Terpadu:** Menu rekapitulasi sekolah gabungan. Setiap detail kelas disajikan dalam tabel dengan sistem *pagination*. 
+- **Riwayat Tugas Pop-Up:** Penambahan *Modal* interaktif yang muncul ketika baris siswa ditekan; menampilkan riwayat spesifik tugas dan nilai.
+- **Menu Setelan & Proteksi Sandi:** Fitur untuk mengelola profil Pengawas, mengubah username dan sandi. Data sandi dilindungi algoritma enkripsi Bcrypt. 
+- **Animasi Notifikasi (Toast):** Penyematan pustaka `react-hot-toast` untuk memberi sinyal keberhasilan atau kegagalan saat menyimpan data form, diiringi dengan peringatan konfirmasi aksi.
+- **Cetak Dokumen:** Fitur Export PDF khusus Laporan KLiNO (berdasarkan rentang tanggal) dengan format bergaris dan dukungan banyak halaman otomatis.
 
 ### [v1.1.0] - Pembaruan Modul Data Master
 **Ditambahkan:**

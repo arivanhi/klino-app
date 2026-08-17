@@ -49,7 +49,9 @@ export default async function PengawasLiterasiPage() {
             where: dateFilter
           }
         }
-      }
+      },
+      users: { where: { role: 'GURU' } },
+      mentors: true
     }
   });
 
@@ -94,7 +96,9 @@ export default async function PengawasLiterasiPage() {
       avgScore: avgLit,
       status: status,
       progress: avgLit, // Using avg score as progress %
-      tasks: tasksForExport
+      tasks: tasksForExport,
+      guruNames: school.users.length > 0 ? school.users.map(u => u.name).join(', ') : '-',
+      mentorNames: school.mentors.length > 0 ? school.mentors.map(m => m.name).join(', ') : '-'
     };
   });
 

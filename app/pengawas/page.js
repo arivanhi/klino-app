@@ -16,7 +16,11 @@ export default async function PengawasDashboard() {
           tugasLit: true,
           nilaiNum: true
         }
-      }
+      },
+      users: {
+        where: { role: 'GURU' }
+      },
+      mentors: true
     }
   });
 
@@ -80,7 +84,9 @@ export default async function PengawasDashboard() {
       participantStudents,
       avgLit,
       avgNum,
-      status: (parseFloat(avgLit) < 60 || parseFloat(avgNum) < 60) ? 'Perhatian' : 'Stabil'
+      status: (parseFloat(avgLit) < 60 || parseFloat(avgNum) < 60) ? 'Perhatian' : 'Stabil',
+      guruCount: school.users.length,
+      mentorCount: school.mentors.length
     };
   });
 

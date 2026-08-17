@@ -73,7 +73,9 @@ export default async function LaporanKLiNOPage({ searchParams }) {
             }
           }
         }
-      }
+      },
+      users: { where: { role: 'GURU' } },
+      mentors: true
     }
   });
 
@@ -139,7 +141,9 @@ export default async function LaporanKLiNOPage({ searchParams }) {
       litScore: Math.round(avgLit),
       numScore: Math.round(avgNum),
       status: status,
-      tasks: allTasks
+      tasks: allTasks,
+      guruNames: school.users.length > 0 ? school.users.map(u => u.name).join(', ') : '-',
+      mentorNames: school.mentors.length > 0 ? school.mentors.map(m => m.name).join(', ') : '-'
     };
   });
 

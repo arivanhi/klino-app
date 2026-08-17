@@ -6,7 +6,7 @@ import { Download, Eye, ArrowLeft, BookOpen, Calculator, ChevronRight } from 'lu
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
-export default function DetailLaporanClient({ schoolId, schoolName, metrics, classes }) {
+export default function DetailLaporanClient({ schoolId, schoolName, schoolInfo, metrics, classes }) {
   const [activeTabLit, setActiveTabLit] = useState(classes.length > 0 ? classes[0].id : null);
   const [activeTabNum, setActiveTabNum] = useState(classes.length > 0 ? classes[0].id : null);
 
@@ -102,7 +102,7 @@ export default function DetailLaporanClient({ schoolId, schoolName, metrics, cla
 
       {/* Breadcrumbs */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', fontSize: '0.875rem', color: '#6b7280', fontWeight: 500 }}>
-        <Link href="/pengawas/laporan" style={{ color: '#004282', textDecoration: 'none' }}>Laporan KLinO</Link>
+        <Link href="/pengawas/laporan" style={{ color: '#004282', textDecoration: 'none' }}>Laporan KLiNO</Link>
         <ChevronRight size={14} />
         <span style={{ color: '#111827' }}>Detail Laporan {schoolName}</span>
       </div>
@@ -127,6 +127,21 @@ export default function DetailLaporanClient({ schoolId, schoolName, metrics, cla
           </button>
         </div>
       </div>
+
+      {/* Informasi Sekolah */}
+      {schoolInfo && (
+        <div style={{ backgroundColor: 'white', padding: '24px', borderRadius: '12px', border: '1px solid #e5e7eb', marginBottom: '32px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <h2 style={{ fontSize: '1.25rem', color: '#111827', margin: '0 0 8px 0', fontWeight: 700 }}>Informasi Sekolah</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', fontSize: '0.9rem' }}>
+            <div><span style={{ color: '#6b7280', display: 'block', marginBottom: '4px' }}>NPSN</span><strong style={{ color: '#111827' }}>{schoolInfo.npsn}</strong></div>
+            <div><span style={{ color: '#6b7280', display: 'block', marginBottom: '4px' }}>Kecamatan</span><strong style={{ color: '#111827' }}>{schoolInfo.kecamatan}</strong></div>
+            <div style={{ gridColumn: '1 / -1' }}><span style={{ color: '#6b7280', display: 'block', marginBottom: '4px' }}>Alamat</span><strong style={{ color: '#111827' }}>{schoolInfo.address}</strong></div>
+            <div style={{ gridColumn: '1 / -1', borderTop: '1px solid #e5e7eb', margin: '8px 0' }}></div>
+            <div><span style={{ color: '#6b7280', display: 'block', marginBottom: '4px' }}>Guru Pendamping</span><strong style={{ color: '#111827' }}>{schoolInfo.guruNames}</strong></div>
+            <div><span style={{ color: '#6b7280', display: 'block', marginBottom: '4px' }}>Mentor</span><strong style={{ color: '#111827' }}>{schoolInfo.mentorNames}</strong></div>
+          </div>
+        </div>
+      )}
 
       {/* Top Cards (2 Cards) */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px', marginBottom: '40px' }}>

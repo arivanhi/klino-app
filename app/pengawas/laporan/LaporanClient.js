@@ -194,7 +194,18 @@ export default function LaporanClient({ semesters, selectedSemesterId, schools }
                       {school.status}
                     </span>
                   </div>
-                  <p style={{ color: '#6b7280', fontSize: '0.875rem', margin: '0 0 24px 0', fontWeight: 500 }}>{school.kecamatan}</p>
+                  <p style={{ color: '#6b7280', fontSize: '0.875rem', margin: '0 0 16px 0', fontWeight: 500 }}>{school.kecamatan}</p>
+
+                  <div style={{ marginBottom: '24px', fontSize: '0.85rem', color: '#4b5563', backgroundColor: '#f9fafb', padding: '12px', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
+                    <div style={{ marginBottom: '6px', display: 'flex', gap: '8px' }}>
+                      <strong style={{ minWidth: '60px', color: '#374151' }}>Guru:</strong> 
+                      <span style={{ flex: 1 }} className="truncate" title={school.guruNames}>{school.guruNames}</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <strong style={{ minWidth: '60px', color: '#374151' }}>Mentor:</strong> 
+                      <span style={{ flex: 1 }} className="truncate" title={school.mentorNames}>{school.mentorNames}</span>
+                    </div>
+                  </div>
 
                   <div style={{ marginBottom: '20px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem', marginBottom: '8px' }}>

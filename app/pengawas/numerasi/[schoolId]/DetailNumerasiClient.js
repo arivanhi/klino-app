@@ -7,7 +7,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
-export default function DetailNumerasiClient({ schoolId, schoolName, metrics, classes, chartData }) {
+export default function DetailNumerasiClient({ schoolId, schoolName, schoolInfo, metrics, classes, chartData }) {
   const [activeTab, setActiveTab] = useState(classes.length > 0 ? classes[0].id : null);
   const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'asc' });
   const [page, setPage] = useState(1);
@@ -152,6 +152,21 @@ export default function DetailNumerasiClient({ schoolId, schoolName, metrics, cl
           </button>
         </div>
       </div>
+
+      {/* Informasi Sekolah */}
+      {schoolInfo && (
+        <div style={{ backgroundColor: 'white', padding: '24px', borderRadius: '12px', border: '1px solid #e5e7eb', marginBottom: '32px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <h2 style={{ fontSize: '1.25rem', color: '#111827', margin: '0 0 8px 0', fontWeight: 700 }}>Informasi Sekolah</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', fontSize: '0.9rem' }}>
+            <div><span style={{ color: '#6b7280', display: 'block', marginBottom: '4px' }}>NPSN</span><strong style={{ color: '#111827' }}>{schoolInfo.npsn}</strong></div>
+            <div><span style={{ color: '#6b7280', display: 'block', marginBottom: '4px' }}>Kecamatan</span><strong style={{ color: '#111827' }}>{schoolInfo.kecamatan}</strong></div>
+            <div style={{ gridColumn: '1 / -1' }}><span style={{ color: '#6b7280', display: 'block', marginBottom: '4px' }}>Alamat</span><strong style={{ color: '#111827' }}>{schoolInfo.address}</strong></div>
+            <div style={{ gridColumn: '1 / -1', borderTop: '1px solid #e5e7eb', margin: '8px 0' }}></div>
+            <div><span style={{ color: '#6b7280', display: 'block', marginBottom: '4px' }}>Guru Pendamping</span><strong style={{ color: '#111827' }}>{schoolInfo.guruNames}</strong></div>
+            <div><span style={{ color: '#6b7280', display: 'block', marginBottom: '4px' }}>Mentor</span><strong style={{ color: '#111827' }}>{schoolInfo.mentorNames}</strong></div>
+          </div>
+        </div>
+      )}
 
       {/* Top Cards (3 Cards) */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px', marginBottom: '32px' }}>

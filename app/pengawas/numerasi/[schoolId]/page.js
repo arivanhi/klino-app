@@ -49,6 +49,8 @@ export default async function DetailNumerasiPage({ params }) {
     where: { id: schoolId },
     include: {
       kelas: true,
+      users: { where: { role: 'GURU' } },
+      mentors: true,
       siswa: {
         include: {
           tugasNum: { 
@@ -182,5 +184,13 @@ export default async function DetailNumerasiPage({ params }) {
 
   const classes = Object.values(classData).sort((a, b) => a.name.localeCompare(b.name));
 
-  return <DetailNumerasiClient schoolId={schoolId} schoolName={school.name} metrics={metrics} classes={classes} chartData={chartData} />;
+  const schoolInfo = {
+    npsn: school.npsn || '-',
+    kecamatan: school.kecamatan || '-',
+    address: school.address || '-',
+    guruNames: school.users.length > 0 ? school.users.map(u => u.name).join(', ') : '-',
+    mentorNames: school.mentors.length > 0 ? school.mentors.map(m => m.name).join(', ') : '-'
+  };
+
+  return <DetailNumerasiClient schoolId={schoolId} schoolName={school.name} schoolInfo={schoolInfo} metrics={metrics} classes={classes} chartData={chartData} />;
 }

@@ -43,6 +43,8 @@ export default async function DetailLiterasiPage({ params }) {
     where: { id: schoolId },
     include: {
       kelas: true,
+      users: { where: { role: 'GURU' } },
+      mentors: true,
       siswa: {
         include: {
           tugasLit: { where: dateFilter },
@@ -125,5 +127,13 @@ export default async function DetailLiterasiPage({ params }) {
 
   const classes = Object.values(classData).sort((a, b) => a.name.localeCompare(b.name));
 
-  return <DetailClient schoolId={schoolId} schoolName={school.name} metrics={metrics} classes={classes} />;
+  const schoolInfo = {
+    npsn: school.npsn || '-',
+    kecamatan: school.kecamatan || '-',
+    address: school.address || '-',
+    guruNames: school.users.length > 0 ? school.users.map(u => u.name).join(', ') : '-',
+    mentorNames: school.mentors.length > 0 ? school.mentors.map(m => m.name).join(', ') : '-'
+  };
+
+  return <DetailClient schoolId={schoolId} schoolName={school.name} schoolInfo={schoolInfo} metrics={metrics} classes={classes} />;
 }

@@ -49,6 +49,8 @@ export default async function DetailLaporanPage({ params }) {
     where: { id: schoolId },
     include: {
       kelas: true,
+      users: { where: { role: 'GURU' } },
+      mentors: true,
       siswa: {
         include: {
           tugasLit: { where: dateFilter, orderBy: { date: 'asc' } },
@@ -147,5 +149,13 @@ export default async function DetailLaporanPage({ params }) {
 
   const classes = Object.values(classData).sort((a, b) => a.name.localeCompare(b.name));
 
-  return <DetailLaporanClient schoolId={schoolId} schoolName={school.name} metrics={metrics} classes={classes} />;
+  const schoolInfo = {
+    npsn: school.npsn || '-',
+    kecamatan: school.kecamatan || '-',
+    address: school.address || '-',
+    guruNames: school.users.length > 0 ? school.users.map(u => u.name).join(', ') : '-',
+    mentorNames: school.mentors.length > 0 ? school.mentors.map(m => m.name).join(', ') : '-'
+  };
+
+  return <DetailLaporanClient schoolId={schoolId} schoolName={school.name} schoolInfo={schoolInfo} metrics={metrics} classes={classes} />;
 }

@@ -59,7 +59,7 @@ export default function SetelanClient({ user }) {
         
         router.refresh();
       } else {
-        toast.error(data.error || 'Terjadi kesalahan.', { id: loadingToast });
+        toast.error(data.error + (data.sessionDebug ? ' ' + JSON.stringify(data.sessionDebug) : ''), { id: loadingToast });
       }
     } catch (error) {
       toast.error('Gagal terhubung ke server.', { id: loadingToast });

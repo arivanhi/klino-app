@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { GraduationCap, BookOpen, Calculator, AlertTriangle } from 'lucide-react';
+import { GraduationCap, BookOpen, Calculator, AlertTriangle, TrendingUp, TrendingDown, Users } from 'lucide-react';
 
 export default function DashboardClient({ schools, globalStats }) {
   const [page, setPage] = useState(1);
@@ -11,15 +11,11 @@ export default function DashboardClient({ schools, globalStats }) {
 
   const paginatedSchools = schools.slice((page - 1) * itemsPerPage, page * itemsPerPage);
 
-  // SVG Trend Line (Mock) - colored dynamically based on threshold
-  const renderTrendLine = (score) => {
+  // Trend Icon - colored dynamically based on threshold
+  const renderTrendIcon = (score) => {
     const isGood = parseFloat(score) >= 60;
-    const color = isGood ? '#059669' : '#dc2626';
-    return (
-      <svg width="60" height="20" viewBox="0 0 60 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M2 15 Q 10 5, 20 15 T 40 15 T 58 5" stroke={color} strokeWidth="2" strokeLinecap="round" fill="none" />
-      </svg>
-    );
+    const color = isGood ? '#059669' : '#dc2626'; // Green if >= 60, Red if < 60
+    return isGood ? <TrendingUp color={color} size={24} /> : <TrendingDown color={color} size={24} />;
   };
 
   return (
@@ -95,7 +91,17 @@ export default function DashboardClient({ schools, globalStats }) {
                     {school.status}
                   </span>
                 </div>
-                <p style={{ color: '#6b7280', fontSize: '0.85rem', margin: 0 }}>{school.participantStudents} Siswa Partisipan</p>
+                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', color: '#6b7280', fontSize: '0.85rem', margin: 0, marginTop: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <Users size={14} /> {school.participantStudents} Siswa
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <Users size={14} /> {school.guruCount} Guru
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <Users size={14} /> {school.mentorCount} Mentor
+                  </div>
+                </div>
               </div>
               
               <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -104,14 +110,14 @@ export default function DashboardClient({ schools, globalStats }) {
                     <div style={{ fontSize: '0.75rem', color: '#6b7280', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px' }}>Literasi</div>
                     <div style={{ fontSize: '1.25rem', color: '#004282', fontWeight: 700 }}>{school.avgLit}%</div>
                   </div>
-                  {renderTrendLine(school.avgLit)}
+                  {renderTrendIcon(school.avgLit)}
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
                     <div style={{ fontSize: '0.75rem', color: '#6b7280', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px' }}>Numerasi</div>
                     <div style={{ fontSize: '1.25rem', color: '#92400e', fontWeight: 700 }}>{school.avgNum}%</div>
                   </div>
-                  {renderTrendLine(school.avgNum)}
+                  {renderTrendIcon(school.avgNum)}
                 </div>
               </div>
 

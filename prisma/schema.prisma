@@ -32,6 +32,8 @@ model Sekolah {
   kecamatan   String?
   address     String?
   logoUrl     String?
+  kkmLit      Float    @default(75)
+  kkmNum      Float    @default(75)
   users       User[]
   mentors     Mentor[]
   kelas       Kelas[]

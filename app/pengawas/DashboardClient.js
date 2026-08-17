@@ -13,6 +13,7 @@ export default function DashboardClient({ schools, globalStats }) {
 
   // Trend Icon - colored dynamically based on threshold
   const renderTrendIcon = (score) => {
+    if (score === '-') return null;
     const isGood = parseFloat(score) >= 60;
     const color = isGood ? '#059669' : '#dc2626'; // Green if >= 60, Red if < 60
     return isGood ? <TrendingUp color={color} size={24} /> : <TrendingDown color={color} size={24} />;
@@ -39,9 +40,9 @@ export default function DashboardClient({ schools, globalStats }) {
         </div>
 
         <div style={{ backgroundColor: 'white', padding: '24px', borderRadius: '12px', border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-          <h3 style={{ color: '#6b7280', fontSize: '0.875rem', fontWeight: 500, marginBottom: '8px' }}>Rata-rata Literasi</h3>
+          <h3 style={{ color: '#6b7280', fontSize: '0.875rem', fontWeight: 500, marginBottom: '8px' }}>Literasi Terkumpul</h3>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px' }}>
-            <span style={{ fontSize: '2.5rem', fontWeight: 800, color: '#111827' }}>{globalStats.avgLit}%</span>
+            <span style={{ fontSize: '2.5rem', fontWeight: 800, color: '#111827' }}>{globalStats.avgLit === '-' ? '-' : `${globalStats.avgLit}%`}</span>
             <span style={{ display: 'flex', alignItems: 'center' }}>
                <BookOpen size={28} color="#059669" />
             </span>
@@ -51,7 +52,7 @@ export default function DashboardClient({ schools, globalStats }) {
         <div style={{ backgroundColor: 'white', padding: '24px', borderRadius: '12px', border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
           <h3 style={{ color: '#6b7280', fontSize: '0.875rem', fontWeight: 500, marginBottom: '8px' }}>Rata-rata Numerasi</h3>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px' }}>
-            <span style={{ fontSize: '2.5rem', fontWeight: 800, color: '#111827' }}>{globalStats.avgNum}%</span>
+            <span style={{ fontSize: '2.5rem', fontWeight: 800, color: '#111827' }}>{globalStats.avgNum}</span>
             <span style={{ display: 'flex', alignItems: 'center' }}>
                <Calculator size={28} color="#059669" />
             </span>
@@ -85,8 +86,8 @@ export default function DashboardClient({ schools, globalStats }) {
                   <h3 style={{ fontSize: '1rem', color: '#111827', fontWeight: 600, margin: 0 }}>{school.name}</h3>
                   <span style={{ 
                     padding: '4px 12px', borderRadius: '999px', fontSize: '0.75rem', fontWeight: 600,
-                    backgroundColor: school.status === 'Stabil' ? '#d1fae5' : '#fee2e2',
-                    color: school.status === 'Stabil' ? '#059669' : '#dc2626'
+                    backgroundColor: school.status === 'Stabil' ? '#d1fae5' : school.status === 'Belum Ada Data' ? '#f3f4f6' : '#fee2e2',
+                    color: school.status === 'Stabil' ? '#059669' : school.status === 'Belum Ada Data' ? '#6b7280' : '#dc2626'
                   }}>
                     {school.status}
                   </span>
@@ -107,15 +108,15 @@ export default function DashboardClient({ schools, globalStats }) {
               <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
-                    <div style={{ fontSize: '0.75rem', color: '#6b7280', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px' }}>Literasi</div>
-                    <div style={{ fontSize: '1.25rem', color: '#004282', fontWeight: 700 }}>{school.avgLit}%</div>
+                    <div style={{ fontSize: '0.75rem', color: '#6b7280', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px' }}>Literasi Terkumpul</div>
+                    <div style={{ fontSize: '1.25rem', color: '#004282', fontWeight: 700 }}>{school.avgLit === '-' ? '-' : `${school.avgLit}%`}</div>
                   </div>
                   {renderTrendIcon(school.avgLit)}
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
                     <div style={{ fontSize: '0.75rem', color: '#6b7280', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px' }}>Numerasi</div>
-                    <div style={{ fontSize: '1.25rem', color: '#92400e', fontWeight: 700 }}>{school.avgNum}%</div>
+                    <div style={{ fontSize: '1.25rem', color: '#92400e', fontWeight: 700 }}>{school.avgNum}</div>
                   </div>
                   {renderTrendIcon(school.avgNum)}
                 </div>

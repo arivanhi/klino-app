@@ -279,15 +279,13 @@ export default function DetailLaporanClient({ schoolId, schoolName, schoolInfo, 
                 <th style={{ padding: '16px 24px', fontSize: '0.75rem', fontWeight: 700, color: '#4b5563', width: '5%' }}>NO</th>
                 <th style={{ padding: '16px 24px', fontSize: '0.75rem', fontWeight: 700, color: '#4b5563', width: '20%' }}>NAMA SISWA</th>
                 <th style={{ padding: '16px 24px', fontSize: '0.75rem', fontWeight: 700, color: '#4b5563', width: '15%' }}>NIS</th>
-                <th style={{ padding: '16px 24px', fontSize: '0.75rem', fontWeight: 700, color: '#4b5563' }}>NUM 1</th>
-                <th style={{ padding: '16px 24px', fontSize: '0.75rem', fontWeight: 700, color: '#4b5563' }}>NUM 2</th>
-                <th style={{ padding: '16px 24px', fontSize: '0.75rem', fontWeight: 700, color: '#4b5563' }}>NUM 3</th>
+                <th style={{ padding: '16px 24px', fontSize: '0.75rem', fontWeight: 700, color: '#4b5563' }}>JML TUGAS (DINILAI)</th>
                 <th style={{ padding: '16px 24px', fontSize: '0.75rem', fontWeight: 700, color: '#4b5563' }}>RATA-RATA</th>
               </tr>
             </thead>
             <tbody>
               {paginatedStudentsNum.length === 0 ? (
-                <tr><td colSpan="7" style={{ padding: '24px', textAlign: 'center', color: '#6b7280' }}>Tidak ada data numerasi.</td></tr>
+                <tr><td colSpan="5" style={{ padding: '24px', textAlign: 'center', color: '#6b7280' }}>Tidak ada data numerasi.</td></tr>
               ) : (
                 paginatedStudentsNum.map((s, idx) => (
                   <tr
@@ -299,9 +297,7 @@ export default function DetailLaporanClient({ schoolId, schoolName, schoolInfo, 
                     <td style={{ padding: '20px 24px', color: '#4b5563', fontSize: '0.875rem' }}>{(pageNum - 1) * itemsPerPage + idx + 1}</td>
                     <td style={{ padding: '20px 24px', color: '#111827', fontSize: '0.875rem', fontWeight: 600 }}>{s.name}</td>
                     <td style={{ padding: '20px 24px', color: '#6b7280', fontSize: '0.875rem' }}>{s.nis || '-'}</td>
-                    <td style={{ padding: '20px 24px', color: '#4b5563', fontSize: '0.875rem' }}>{s.num1}</td>
-                    <td style={{ padding: '20px 24px', color: '#4b5563', fontSize: '0.875rem' }}>{s.num2}</td>
-                    <td style={{ padding: '20px 24px', color: '#4b5563', fontSize: '0.875rem' }}>{s.num3}</td>
+                    <td style={{ padding: '20px 24px', color: '#4b5563', fontSize: '0.875rem' }}>{s.tasksNum.filter(t => t.score !== 'Belum Dinilai').length}</td>
                     <td style={{ padding: '20px 24px', color: '#0f766e', fontSize: '0.875rem', fontWeight: 700 }}>{s.numAvg}</td>
                   </tr>
                 ))

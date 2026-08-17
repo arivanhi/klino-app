@@ -56,33 +56,33 @@ export default async function PengawasLiterasiPage() {
   });
 
   const processedSchools = schoolsData.map(school => {
-    let schoolLitTotal = 0;
-    let schoolLitCount = 0;
+    let schoolLitCollected = 0;
+    let schoolLitAssigned = 0;
 
     school.siswa.forEach(student => {
+      schoolLitAssigned += student.tugasLit.length;
       student.tugasLit.forEach(t => {
-        if (t.score !== null) {
-          schoolLitTotal += t.score;
-          schoolLitCount++;
+        if (t.fileUrl) {
+          schoolLitCollected++;
         }
       });
     });
 
-    const avgLit = schoolLitCount > 0 ? (schoolLitTotal / schoolLitCount).toFixed(1) : '0';
+    const litPercent = schoolLitAssigned > 0 ? (schoolLitCollected / schoolLitAssigned) * 100 : 0;
     let status = 'Perhatian';
-    if (parseFloat(avgLit) >= 80) status = 'Aktif';
-    else if (parseFloat(avgLit) >= 60) status = 'Berkembang';
+    if (litPercent >= school.kkmLit) status = 'Aktif';
+    else if (litPercent >= (school.kkmLit - 15)) status = 'Berkembang';
 
     // The raw tasks for export later if needed
     const tasksForExport = [];
     school.siswa.forEach(student => {
       student.tugasLit.forEach(t => {
-        if (t.score !== null) {
+        if (t.fileUrl) {
           tasksForExport.push({
             siswaName: student.name,
             nis: student.nis,
             title: t.title,
-            score: t.score,
+            score: t.score !== null ? t.score : 'Terkumpul',
             date: t.date.toISOString()
           });
         }
@@ -92,10 +92,10 @@ export default async function PengawasLiterasiPage() {
     return {
       id: school.id,
       name: school.name,
-      totalTasks: schoolLitCount,
-      avgScore: avgLit,
+      totalTasks: schoolLitAssigned, // Changed to show total tasks assigned
+      avgScore: schoolLitAssigned > 0 ? litPercent.toFixed(1) : '0', // Using percent here
       status: status,
-      progress: avgLit, // Using avg score as progress %
+      progress: litPercent.toFixed(1), // Using percent as progress %
       tasks: tasksForExport,
       guruNames: school.users.length > 0 ? school.users.map(u => u.name).join(', ') : '-',
       mentorNames: school.mentors.length > 0 ? school.mentors.map(m => m.name).join(', ') : '-'

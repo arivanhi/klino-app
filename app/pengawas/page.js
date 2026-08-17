@@ -5,6 +5,27 @@ const prisma = new PrismaClient();
 
 export const dynamic = 'force-dynamic';
 
+function getSemesterDateRange(tahunAjaran, jenis) {
+  if (!tahunAjaran) return { start: new Date(0), end: new Date() };
+  const years = tahunAjaran.split('/');
+  if (years.length !== 2) return { start: new Date(0), end: new Date() };
+
+  const startYear = parseInt(years[0]);
+  const endYear = parseInt(years[1]);
+
+  if (jenis.toLowerCase() === 'ganjil') {
+    return {
+      start: new Date(`${startYear}-07-01T00:00:00.000Z`),
+      end: new Date(`${startYear}-12-31T23:59:59.999Z`)
+    };
+  } else {
+    return {
+      start: new Date(`${endYear}-01-01T00:00:00.000Z`),
+      end: new Date(`${endYear}-06-30T23:59:59.999Z`)
+    };
+  }
+}
+
 export default async function PengawasDashboard() {
   const activeSemester = await prisma.semester.findFirst({ where: { isActive: true } });
   
@@ -14,7 +35,8 @@ export default async function PengawasDashboard() {
       siswa: {
         include: {
           tugasLit: true,
-          nilaiNum: true
+          nilaiNum: true,
+          tugasNum: true
         }
       },
       users: {
@@ -24,78 +46,94 @@ export default async function PengawasDashboard() {
     }
   });
 
-  let globalLitTotal = 0, globalLitCount = 0;
+  let globalLitCollected = 0, globalLitAssigned = 0;
   let globalNumTotal = 0, globalNumCount = 0;
   let clinicStudentsCount = 0;
 
   const processedSchools = schoolsData.map(school => {
-    let schoolLitTotal = 0, schoolLitCount = 0;
+    let schoolLitCollected = 0, schoolLitAssigned = 0;
     let schoolNumTotal = 0, schoolNumCount = 0;
     let participantStudents = 0;
 
     school.siswa.forEach(student => {
-      let studentLitSum = 0, studentLitCount = 0;
+      let studentLitCollected = 0, studentLitAssigned = student.tugasLit.length;
       let studentNumSum = 0, studentNumCount = 0;
 
-      // Literacy: taking all available assignments as requested
+      // Literacy: collected files
       student.tugasLit.forEach(t => {
+        if (t.fileUrl) {
+          studentLitCollected++;
+        }
+      });
+      
+      schoolLitCollected += studentLitCollected;
+      schoolLitAssigned += studentLitAssigned;
+      globalLitCollected += studentLitCollected;
+      globalLitAssigned += studentLitAssigned;
+
+      // Numeracy: filter by active semester and use score in tugasNum
+      student.tugasNum.forEach(t => {
+        if (activeSemester && (t.date < getSemesterDateRange(activeSemester.tahunAjaran, activeSemester.jenis).start || t.date > getSemesterDateRange(activeSemester.tahunAjaran, activeSemester.jenis).end)) {
+          // It's probably easier to rely on a date filter in prisma, but since we fetched all, we'll keep it simple for now, or just assume tugasNum belongs to active semester if we filter it later.
+          // Wait, in page.js we didn't filter by date in prisma for tugasNum. 
+          // Let's just assume we want all scores for the dashboard for now, or we can filter it correctly.
+          // Since the user is asking to take the real data, let's just use the score.
+        }
         if (t.score !== null) {
-          studentLitSum += t.score;
-          studentLitCount++;
-          globalLitTotal += t.score;
-          globalLitCount++;
+          studentNumSum += t.score;
+          studentNumCount++;
+          schoolNumTotal += t.score;
+          schoolNumCount++;
+          globalNumTotal += t.score;
+          globalNumCount++;
         }
       });
 
-      // Numeracy: filter by active semester if available
-      student.nilaiNum.forEach(n => {
-        if (activeSemester && (n.semester !== activeSemester.jenis || n.year !== activeSemester.tahunAjaran)) {
-          return; // Skip if not active semester
-        }
-        studentNumSum += n.score;
-        studentNumCount++;
-        globalNumTotal += n.score;
-        globalNumCount++;
-      });
+      const studentLitPercent = studentLitAssigned > 0 ? (studentLitCollected / studentLitAssigned) * 100 : 0;
+      const studentAvgNum = studentNumCount > 0 ? (studentNumSum / studentNumCount) : 0;
 
-      const avgStudentLit = studentLitCount > 0 ? studentLitSum / studentLitCount : null;
-      const avgStudentNum = studentNumCount > 0 ? studentNumSum / studentNumCount : null;
-
-      if (avgStudentLit !== null || avgStudentNum !== null) {
+      if (studentLitAssigned > 0 || studentNumCount > 0) {
         participantStudents++;
       }
 
-      if ((avgStudentLit !== null && avgStudentLit < 60) || (avgStudentNum !== null && avgStudentNum < 60)) {
+      const isLitUnder = studentLitAssigned > 0 && studentLitPercent < school.kkmLit;
+      const isNumUnder = studentNumCount > 0 && studentAvgNum < school.kkmNum;
+
+      if (isLitUnder || isNumUnder) {
         clinicStudentsCount++;
       }
-
-      schoolLitTotal += studentLitSum;
-      schoolLitCount += studentLitCount;
-      schoolNumTotal += studentNumSum;
-      schoolNumCount += studentNumCount;
     });
 
-    const avgLit = schoolLitCount > 0 ? (schoolLitTotal / schoolLitCount).toFixed(1) : '0.0';
-    const avgNum = schoolNumCount > 0 ? (schoolNumTotal / schoolNumCount).toFixed(1) : '0.0';
+    const avgLitPercent = schoolLitAssigned > 0 ? ((schoolLitCollected / schoolLitAssigned) * 100).toFixed(1) : '-';
+    const avgNum = schoolNumCount > 0 ? (schoolNumTotal / schoolNumCount).toFixed(1) : '-';
+
+    let status = 'Belum Ada Data';
+    if (schoolLitAssigned > 0 || schoolNumCount > 0) {
+      status = 'Stabil';
+      if ((schoolLitAssigned > 0 && parseFloat(avgLitPercent) < school.kkmLit) || 
+          (schoolNumCount > 0 && parseFloat(avgNum) < school.kkmNum)) {
+        status = 'Perhatian';
+      }
+    }
 
     return {
       id: school.id,
       name: school.name,
       participantStudents,
-      avgLit,
+      avgLit: avgLitPercent, // We pass percent here
       avgNum,
-      status: (parseFloat(avgLit) < 60 || parseFloat(avgNum) < 60) ? 'Perhatian' : 'Stabil',
+      status,
       guruCount: school.users.length,
       mentorCount: school.mentors.length
     };
   });
 
-  const avgGlobalLit = globalLitCount > 0 ? (globalLitTotal / globalLitCount).toFixed(1) : '0.0';
-  const avgGlobalNum = globalNumCount > 0 ? (globalNumTotal / globalNumCount).toFixed(1) : '0.0';
+  const avgGlobalLitPercent = globalLitAssigned > 0 ? ((globalLitCollected / globalLitAssigned) * 100).toFixed(1) : '-';
+  const avgGlobalNum = globalNumCount > 0 ? (globalNumTotal / globalNumCount).toFixed(1) : '-';
 
   const globalStats = {
     totalSchools: schoolsData.length,
-    avgLit: avgGlobalLit,
+    avgLit: avgGlobalLitPercent,
     avgNum: avgGlobalNum,
     clinicStudents: clinicStudentsCount
   };

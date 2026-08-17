@@ -81,64 +81,69 @@ export default async function LaporanKLiNOPage({ searchParams }) {
 
   // 4. Proses perhitungan skor per sekolah
   const processedSchools = schoolsData.map(school => {
-    let litTotalScore = 0;
-    let litCount = 0;
+    let litCollected = 0;
+    let litAssigned = 0;
     let numTotalScore = 0;
     let numCount = 0;
 
     const allTasks = [];
 
     school.siswa.forEach(student => {
-      // Hitung rata-rata Literasi
+      // Hitung persentase Literasi
+      litAssigned += student.tugasLit.length;
       student.tugasLit.forEach(t => {
-        if (t.score !== null) {
-          litTotalScore += t.score;
-          litCount++;
+        if (t.fileUrl) {
+          litCollected++;
           allTasks.push({
             siswaName: student.name,
             nis: student.nis,
             title: t.title,
             type: 'Literasi',
-            score: t.score,
+            score: t.score !== null ? t.score : 'Terkumpul',
             date: t.date.toISOString()
           });
         }
       });
 
-      // Hitung rata-rata Numerasi dari NilaiNumerasi
-      student.nilaiNum.forEach(n => {
-        numTotalScore += n.score;
-        numCount++;
-      });
-      
-      // Ambil riwayat penugasan numerasi untuk Export
+      // Hitung rata-rata Numerasi dari tugasNum
       student.tugasNum.forEach(t => {
-        allTasks.push({
-          siswaName: student.name,
-          nis: student.nis,
-          title: t.title,
-          type: 'Numerasi',
-          score: t.score || '-',
-          date: t.date.toISOString()
-        });
+        if (t.score !== null) {
+          numTotalScore += t.score;
+          numCount++;
+          allTasks.push({
+            siswaName: student.name,
+            nis: student.nis,
+            title: t.title,
+            type: 'Numerasi',
+            score: t.score,
+            date: t.date.toISOString()
+          });
+        } else {
+          // Include unassessed tasks too for export
+          allTasks.push({
+            siswaName: student.name,
+            nis: student.nis,
+            title: t.title,
+            type: 'Numerasi',
+            score: 'Belum Dinilai',
+            date: t.date.toISOString()
+          });
+        }
       });
     });
 
-    const avgLit = litCount > 0 ? (litTotalScore / litCount) : 0;
+    const litPercent = litAssigned > 0 ? (litCollected / litAssigned) * 100 : 0;
     const avgNum = numCount > 0 ? (numTotalScore / numCount) : 0;
     
-    // Rata-rata gabungan untuk menentukan Badge
-    const combinedAvg = (avgLit + avgNum) / ( (avgLit > 0 && avgNum > 0) ? 2 : 1 );
-    
     let status = 'Perhatian';
-    if (combinedAvg >= 80) status = 'Unggul';
-    else if (combinedAvg >= 60) status = 'Berkembang';
+    if (litPercent >= school.kkmLit && avgNum >= school.kkmNum) status = 'Aman';
+    else if (litPercent >= (school.kkmLit - 15) && avgNum >= (school.kkmNum - 15)) status = 'Pantau';
 
     return {
       id: school.id,
       name: school.name,
       kecamatan: school.kecamatan || 'Kecamatan Brebes', // Fallback jika kosong
-      litScore: Math.round(avgLit),
+      litScore: Math.round(litPercent),
       numScore: Math.round(avgNum),
       status: status,
       tasks: allTasks,

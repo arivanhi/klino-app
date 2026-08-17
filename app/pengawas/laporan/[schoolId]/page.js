@@ -74,56 +74,57 @@ export default async function DetailLaporanPage({ params }) {
     classData[k.id] = { id: k.id, name: k.name, students: [] };
   });
 
-  let totalLitScore = 0;
-  let countLitScore = 0;
+  let litAssignedOverall = 0;
+  let litCollectedOverall = 0;
   
   let totalNumScore = 0;
   let countNumScore = 0;
 
   school.siswa.forEach(student => {
-    let studentLitSum = 0;
-    let studentLitCount = 0;
+    let studentLitAssigned = student.tugasLit.length;
+    let studentLitCollected = 0;
     
     let studentNumSum = 0;
     let studentNumCount = 0;
 
     student.tugasLit.forEach(t => {
+      if (t.fileUrl) {
+        studentLitCollected++;
+        litCollectedOverall++;
+      }
+    });
+    litAssignedOverall += studentLitAssigned;
+
+    student.tugasNum.forEach(t => {
       if (t.score !== null) {
-        totalLitScore += t.score;
-        countLitScore++;
-        studentLitSum += t.score;
-        studentLitCount++;
+        totalNumScore += t.score;
+        countNumScore++;
+        studentNumSum += t.score;
+        studentNumCount++;
       }
     });
 
-    student.nilaiNum.forEach(n => {
-      totalNumScore += n.score;
-      countNumScore++;
-      studentNumSum += n.score;
-      studentNumCount++;
-    });
-
     if (student.kelasId && classData[student.kelasId]) {
-      const litAvg = studentLitCount > 0 ? (studentLitSum / studentLitCount).toFixed(1) : '-';
+      const litAvg = studentLitAssigned > 0 ? ((studentLitCollected / studentLitAssigned) * 100).toFixed(1) : '-';
       const numAvg = studentNumCount > 0 ? (studentNumSum / studentNumCount).toFixed(1) : '-';
 
       classData[student.kelasId].students.push({
         id: student.id,
         nis: student.nis,
         name: student.name,
-        lit1: student.tugasLit[0]?.score || '-',
-        lit2: student.tugasLit[1]?.score || '-',
-        lit3: student.tugasLit[2]?.score || '-',
+        lit1: student.tugasLit[0]?.fileUrl ? 'Terkumpul' : '-',
+        lit2: student.tugasLit[1]?.fileUrl ? 'Terkumpul' : '-',
+        lit3: student.tugasLit[2]?.fileUrl ? 'Terkumpul' : '-',
         litAvg: litAvg,
-        num1: student.tugasNum[0]?.score || '-',
-        num2: student.tugasNum[1]?.score || '-',
-        num3: student.tugasNum[2]?.score || '-',
+        num1: student.tugasNum[0]?.score ?? '-',
+        num2: student.tugasNum[1]?.score ?? '-',
+        num3: student.tugasNum[2]?.score ?? '-',
         numAvg: numAvg,
         tasksLit: student.tugasLit.map(t => ({
           id: t.id,
           title: t.title,
           date: t.date.toISOString(),
-          score: t.score,
+          score: t.fileUrl ? 'Terkumpul' : 'Belum',
           fileUrl: t.fileUrl,
           type: 'Literasi'
         })),
@@ -131,7 +132,7 @@ export default async function DetailLaporanPage({ params }) {
           id: t.id,
           title: t.title,
           date: t.date.toISOString(),
-          score: t.score,
+          score: t.score !== null ? t.score : 'Belum Dinilai',
           fileUrl: t.fileUrl,
           type: 'Numerasi'
         }))
@@ -139,11 +140,11 @@ export default async function DetailLaporanPage({ params }) {
     }
   });
 
-  const avgLitOverall = countLitScore > 0 ? Math.round(totalLitScore / countLitScore) : 0;
+  const litPercentOverall = litAssignedOverall > 0 ? Math.round((litCollectedOverall / litAssignedOverall) * 100) : 0;
   const avgNumOverall = countNumScore > 0 ? Math.round(totalNumScore / countNumScore) : 0;
 
   const metrics = {
-    avgLit: avgLitOverall,
+    avgLit: litPercentOverall,
     avgNum: avgNumOverall
   };
 

@@ -69,23 +69,25 @@ export default async function PengawasNumerasiPage() {
   const processedSchools = schoolsData.map(school => {
     let schoolNumTotalScore = 0;
     let schoolNumScoreCount = 0;
-    let totalTasksCompleted = 0;
+    let totalTasksAssigned = 0;
 
     school.siswa.forEach(student => {
-      // Calculate total tasks completed
-      totalTasksCompleted += student.tugasNum.length;
+      // Calculate total tasks assigned
+      totalTasksAssigned += student.tugasNum.length;
 
-      // Calculate average score using NilaiNumerasi
-      student.nilaiNum.forEach(n => {
-        schoolNumTotalScore += n.score;
-        schoolNumScoreCount++;
+      // Calculate average score using tugasNum
+      student.tugasNum.forEach(t => {
+        if (t.score !== null) {
+          schoolNumTotalScore += t.score;
+          schoolNumScoreCount++;
+        }
       });
     });
 
     const avgNum = schoolNumScoreCount > 0 ? (schoolNumTotalScore / schoolNumScoreCount).toFixed(1) : '0';
     let status = 'KRITIS';
-    if (parseFloat(avgNum) >= 80) status = 'AKTIF STABIL';
-    else if (parseFloat(avgNum) >= 60) status = 'PERLU PERHATIAN';
+    if (parseFloat(avgNum) >= school.kkmNum) status = 'AKTIF STABIL';
+    else if (parseFloat(avgNum) >= (school.kkmNum - 15)) status = 'PERLU PERHATIAN';
 
     // The raw tasks for export later if needed
     const tasksForExport = [];
@@ -95,7 +97,7 @@ export default async function PengawasNumerasiPage() {
           siswaName: student.name,
           nis: student.nis,
           title: t.title,
-          score: t.score, // Might be null for Numerasi, but we include it if it exists
+          score: t.score !== null ? t.score : 'Belum Dinilai',
           date: t.date.toISOString()
         });
       });
@@ -104,7 +106,7 @@ export default async function PengawasNumerasiPage() {
     return {
       id: school.id,
       name: school.name,
-      totalTasks: totalTasksCompleted,
+      totalTasks: totalTasksAssigned,
       avgScore: avgNum,
       status: status,
       progress: avgNum, // Using avg score as progress %

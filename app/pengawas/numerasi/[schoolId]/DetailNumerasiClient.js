@@ -214,7 +214,7 @@ export default function DetailNumerasiClient({ schoolId, schoolName, schoolInfo,
           <div style={{ fontSize: '3rem', fontWeight: 800, color: '#dc2626', marginBottom: '8px', lineHeight: 1 }}>{metrics.clinicStudentsCount}</div>
           <div style={{ fontSize: '0.85rem', color: '#4b5563', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '6px' }}>
              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-             Siswa dengan nilai &lt; 60
+             Siswa dengan nilai di bawah KKM
           </div>
         </div>
       </div>
@@ -294,9 +294,7 @@ export default function DetailNumerasiClient({ schoolId, schoolName, schoolInfo,
                 <th style={{ padding: '16px 24px', fontSize: '0.75rem', fontWeight: 600, color: '#6b7280', width: '5%' }}>No</th>
                 <th onClick={() => handleSort('name')} style={{ padding: '16px 24px', fontSize: '0.75rem', fontWeight: 600, color: '#6b7280', cursor: 'pointer', width: '20%' }}>Nama Siswa {sortConfig.key === 'name' && (sortConfig.direction === 'asc' ? '↑' : '↓')}</th>
                 <th onClick={() => handleSort('nis')} style={{ padding: '16px 24px', fontSize: '0.75rem', fontWeight: 600, color: '#6b7280', cursor: 'pointer', width: '15%' }}>NIS {sortConfig.key === 'nis' && (sortConfig.direction === 'asc' ? '↑' : '↓')}</th>
-                <th onClick={() => handleSort('asesmen1')} style={{ padding: '16px 24px', fontSize: '0.75rem', fontWeight: 600, color: '#6b7280', cursor: 'pointer' }}>Nilai Asesmen 1 {sortConfig.key === 'asesmen1' && (sortConfig.direction === 'asc' ? '↑' : '↓')}</th>
-                <th onClick={() => handleSort('asesmen2')} style={{ padding: '16px 24px', fontSize: '0.75rem', fontWeight: 600, color: '#6b7280', cursor: 'pointer' }}>Nilai Asesmen 2 {sortConfig.key === 'asesmen2' && (sortConfig.direction === 'asc' ? '↑' : '↓')}</th>
-                <th onClick={() => handleSort('asesmen3')} style={{ padding: '16px 24px', fontSize: '0.75rem', fontWeight: 600, color: '#6b7280', cursor: 'pointer' }}>Nilai Asesmen 3 {sortConfig.key === 'asesmen3' && (sortConfig.direction === 'asc' ? '↑' : '↓')}</th>
+                <th style={{ padding: '16px 24px', fontSize: '0.75rem', fontWeight: 600, color: '#6b7280' }}>JML TUGAS (DINILAI)</th>
                 <th onClick={() => handleSort('avgScore')} style={{ padding: '16px 24px', fontSize: '0.75rem', fontWeight: 600, color: '#6b7280', cursor: 'pointer' }}>Rata-rata {sortConfig.key === 'avgScore' && (sortConfig.direction === 'asc' ? '↑' : '↓')}</th>
                 <th style={{ padding: '16px 24px', fontSize: '0.75rem', fontWeight: 600, color: '#6b7280' }}>Status</th>
               </tr>
@@ -319,9 +317,7 @@ export default function DetailNumerasiClient({ schoolId, schoolName, schoolInfo,
                     <td style={{ padding: '20px 24px', color: '#4b5563', fontSize: '0.875rem' }}>{(page - 1) * itemsPerPage + idx + 1}</td>
                     <td style={{ padding: '20px 24px', color: '#111827', fontSize: '0.875rem', fontWeight: 600 }}>{s.name}</td>
                     <td style={{ padding: '20px 24px', color: '#4b5563', fontSize: '0.875rem' }}>{s.nis || '-'}</td>
-                    <td style={{ padding: '20px 24px', color: '#4b5563', fontSize: '0.875rem' }}>{s.asesmen1}</td>
-                    <td style={{ padding: '20px 24px', color: '#4b5563', fontSize: '0.875rem' }}>{s.asesmen2}</td>
-                    <td style={{ padding: '20px 24px', color: '#4b5563', fontSize: '0.875rem' }}>{s.asesmen3}</td>
+                    <td style={{ padding: '20px 24px', color: '#4b5563', fontSize: '0.875rem' }}>{s.tasks.filter(t => t.score !== null).length}</td>
                     <td style={{ padding: '20px 24px', color: '#111827', fontSize: '0.875rem', fontWeight: 700 }}>{s.avgScore}</td>
                     <td style={{ padding: '20px 24px' }}>
                       <span style={{ 

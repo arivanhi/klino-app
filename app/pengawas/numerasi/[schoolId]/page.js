@@ -84,35 +84,31 @@ export default async function DetailNumerasiPage({ params }) {
 
   school.siswa.forEach(student => {
     const studentTasks = student.tugasNum;
-    if (studentTasks.length > 0 || student.nilaiNum.length > 0) studentsWithTask++;
+    if (studentTasks.length > 0) studentsWithTask++;
 
     let studentScoreSum = 0;
     let studentScoreCount = 0;
 
-    student.nilaiNum.forEach(n => {
-      totalScore += n.score;
-      scoreCount++;
-      studentScoreSum += n.score;
-      studentScoreCount++;
-    });
-
     studentTasks.forEach(t => {
       if (t.score !== null) {
         allTasks.push(t);
+        totalScore += t.score;
+        scoreCount++;
+        studentScoreSum += t.score;
+        studentScoreCount++;
       }
     });
 
     let studentAvg = 0;
     if (studentScoreCount > 0) {
        studentAvg = studentScoreSum / studentScoreCount;
-       if (studentAvg < 60) clinicStudentsCount++;
+       if (studentAvg < school.kkmNum) clinicStudentsCount++;
     }
 
     if (student.kelasId && classData[student.kelasId]) {
       let status = 'Klinik';
-      if (studentAvg >= 90) status = 'Unggul';
-      else if (studentAvg >= 80) status = 'Aman';
-      else if (studentAvg >= 60) status = 'Pantau';
+      if (studentAvg >= school.kkmNum) status = 'Aman';
+      else if (studentAvg >= (school.kkmNum - 15)) status = 'Pantau';
 
       classData[student.kelasId].students.push({
         id: student.id,

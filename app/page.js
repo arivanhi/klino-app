@@ -36,6 +36,8 @@ export default function Home() {
         window.location.href = '/admin';
       } else if (session?.user?.role === 'PENGAWAS') {
         window.location.href = '/pengawas';
+      } else if (session?.user?.role === 'GURU') {
+        window.location.href = '/guru';
       } else {
         window.location.href = '/';
       }

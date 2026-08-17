@@ -11,6 +11,8 @@ services:
       - DATABASE_URL=mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@db:3306/${MYSQL_DATABASE}
       - NEXTAUTH_URL=${NEXTAUTH_URL}
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+    volumes:
+      - ./storage:/app/storage
     depends_on:
       - db
 

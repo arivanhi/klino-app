@@ -99,16 +99,13 @@ export default async function NumerasiGuruPage() {
     let studentScoreSum = 0;
     let studentScoreCount = 0;
 
-    student.nilaiNum.forEach(n => {
-      totalScore += n.score;
-      scoreCount++;
-      studentScoreSum += n.score;
-      studentScoreCount++;
-    });
-
     studentTasks.forEach(t => {
       if (t.score !== null) {
         allTasks.push(t);
+        totalScore += t.score;
+        scoreCount++;
+        studentScoreSum += t.score;
+        studentScoreCount++;
       }
     });
 
@@ -192,7 +189,21 @@ export default async function NumerasiGuruPage() {
     clinicStudentsCount: clinicStudentsCount
   };
 
-  const classes = Object.values(classData).sort((a, b) => a.name.localeCompare(b.name));
+  const classes = Object.values(classData).sort((a, b) => a.name.localeCompare(b.name)).map(c => {
+    let sum = 0;
+    let count = 0;
+    c.students.forEach(s => {
+      if (s.avgScore !== '-') {
+        sum += parseFloat(s.avgScore);
+        count++;
+      }
+    });
+    return {
+      ...c,
+      avgScore: count > 0 ? parseFloat((sum / count).toFixed(1)) : 0,
+      totalStudents: c.students.length
+    };
+  });
 
   return <NumerasiClient schoolId={schoolId} schoolName={school.name} metrics={metrics} classes={classes} chartData={chartData} />;
 }

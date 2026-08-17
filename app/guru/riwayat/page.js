@@ -7,7 +7,28 @@ import { redirect } from 'next/navigation';
 const prisma = new PrismaClient();
 export const dynamic = 'force-dynamic';
 
-export default async function RiwayatGuruPage() {
+function getSemesterDateRange(tahunAjaran, jenis) {
+  if (!tahunAjaran) return { start: new Date(0), end: new Date() };
+  const years = tahunAjaran.split('/');
+  if (years.length !== 2) return { start: new Date(0), end: new Date() };
+
+  const startYear = parseInt(years[0]);
+  const endYear = parseInt(years[1]);
+
+  if (jenis.toLowerCase() === 'ganjil') {
+    return {
+      start: new Date(`${startYear}-07-01T00:00:00.000Z`),
+      end: new Date(`${startYear}-12-31T23:59:59.999Z`)
+    };
+  } else {
+    return {
+      start: new Date(`${endYear}-01-01T00:00:00.000Z`),
+      end: new Date(`${endYear}-06-30T23:59:59.999Z`)
+    };
+  }
+}
+
+export default async function RiwayatGuruPage({ searchParams }) {
   const session = await getServerSession(authOptions);
   if (!session) redirect('/');
 
@@ -20,7 +41,29 @@ export default async function RiwayatGuruPage() {
     return <div style={{ padding: '32px' }}>Anda belum ditugaskan ke sekolah manapun.</div>;
   }
   const schoolId = user.sekolahId;
-  const activeSemester = await prisma.semester.findFirst({ where: { isActive: true } });
+  
+  const allSemesters = await prisma.semester.findMany({
+    orderBy: [{ tahunAjaran: 'desc' }, { jenis: 'desc' }]
+  });
+
+  let selectedSemesterId = searchParams.semesterId ? parseInt(searchParams.semesterId) : null;
+  let selectedSemester = null;
+
+  if (selectedSemesterId) {
+    selectedSemester = allSemesters.find(s => s.id === selectedSemesterId);
+  }
+  if (!selectedSemester && allSemesters.length > 0) {
+    selectedSemester = allSemesters.find(s => s.isActive) || allSemesters[0];
+    selectedSemesterId = selectedSemester.id;
+  }
+
+  let dateFilter = {};
+  if (selectedSemester) {
+    const range = getSemesterDateRange(selectedSemester.tahunAjaran, selectedSemester.jenis);
+    dateFilter = {
+      date: { gte: range.start, lte: range.end }
+    };
+  }
 
   const school = await prisma.sekolah.findUnique({
     where: { id: schoolId },
@@ -29,8 +72,8 @@ export default async function RiwayatGuruPage() {
         include: {
           siswa: {
             include: {
-              tugasLit: true,
-              nilaiNum: true
+              tugasLit: { where: dateFilter },
+              tugasNum: { where: dateFilter }
             }
           }
         }
@@ -39,10 +82,6 @@ export default async function RiwayatGuruPage() {
   });
 
   if (!school) return <div style={{ padding: '32px' }}>Sekolah tidak ditemukan</div>;
-
-  let globalLitTotal = 0, globalLitCount = 0;
-  let globalNumTotal = 0, globalNumCount = 0;
-  let clinicStudentsCount = 0;
 
   const processedClasses = school.kelas.map(cls => {
     let clsLitTotal = 0, clsLitCount = 0;
@@ -57,17 +96,14 @@ export default async function RiwayatGuruPage() {
         if (t.score !== null) {
           studentLitSum += t.score;
           studentLitCount++;
-          globalLitTotal += t.score;
-          globalLitCount++;
         }
       });
 
-      student.nilaiNum.forEach(n => {
-        if (activeSemester && (n.semester !== activeSemester.jenis || n.year !== activeSemester.tahunAjaran)) return;
-        studentNumSum += n.score;
-        studentNumCount++;
-        globalNumTotal += n.score;
-        globalNumCount++;
+      student.tugasNum.forEach(t => {
+        if (t.score !== null) {
+          studentNumSum += t.score;
+          studentNumCount++;
+        }
       });
 
       const avgStudentLit = studentLitCount > 0 ? studentLitSum / studentLitCount : null;
@@ -75,10 +111,6 @@ export default async function RiwayatGuruPage() {
 
       if (avgStudentLit !== null || avgStudentNum !== null) {
         participantStudents++;
-      }
-
-      if ((avgStudentLit !== null && avgStudentLit < 60) || (avgStudentNum !== null && avgStudentNum < 60)) {
-        clinicStudentsCount++;
       }
 
       clsLitTotal += studentLitSum;
@@ -97,20 +129,14 @@ export default async function RiwayatGuruPage() {
       totalStudents: cls.siswa.length,
       avgLit,
       avgNum,
-      status: (parseFloat(avgLit) < 60 || parseFloat(avgNum) < 60) ? 'Perhatian' : 'Aman'
+      semesterText: selectedSemester ? `Semester ${selectedSemester.jenis}` : '-'
     };
   });
 
-  const avgGlobalLit = globalLitCount > 0 ? (globalLitTotal / globalLitCount).toFixed(1) : '0.0';
-  const avgGlobalNum = globalNumCount > 0 ? (globalNumTotal / globalNumCount).toFixed(1) : '0.0';
-
-  const globalStats = {
-    totalClasses: school.kelas.length,
-    avgLit: avgGlobalLit,
-    avgNum: avgGlobalNum,
-    clinicStudents: clinicStudentsCount,
-    schoolName: school.name
-  };
-
-  return <RiwayatClient classes={processedClasses} globalStats={globalStats} />;
+  return <RiwayatClient 
+    classes={processedClasses} 
+    schoolName={school.name} 
+    semesters={allSemesters} 
+    selectedSemesterId={selectedSemesterId} 
+  />;
 }

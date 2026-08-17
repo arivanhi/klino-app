@@ -7,7 +7,9 @@ import {
   LayoutDashboard, 
   Database, 
   Users, 
-  LogOut 
+  LogOut,
+  Menu,
+  X
 } from 'lucide-react';
 import { getSession } from 'next-auth/react';
 import { useState, useEffect } from 'react';
@@ -22,6 +24,8 @@ export default function AdminLayout({ children }) {
   ];
 
   const [session, setSession] = useState(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   useEffect(() => {
     getSession().then(sess => setSession(sess));
   }, []);
@@ -33,14 +37,25 @@ export default function AdminLayout({ children }) {
 
   return (
     <div className="admin-layout">
+      
+      {/* Mobile Overlay */}
+      {isMobileMenuOpen && (
+        <div className="mobile-overlay" onClick={() => setIsMobileMenuOpen(false)}></div>
+      )}
+
       {/* Sidebar */}
-      <aside className="admin-sidebar">
-        <div className="sidebar-header">
-          <div className="logo-placeholder">K</div>
-          <div>
-            <h2 style={{ fontSize: '1.25rem', color: 'var(--primary-color)', margin: 0 }}>KLiNO</h2>
-            <p style={{ fontSize: '0.7rem', color: '#6b7280', margin: 0, lineHeight: 1.2 }}>Literacy & Numeracy<br/>Clinic</p>
+      <aside className={`admin-sidebar ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
+        <div className="sidebar-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div className="logo-placeholder">K</div>
+            <div>
+              <h2 style={{ fontSize: '1.25rem', color: 'var(--primary-color)', margin: 0 }}>KLiNO</h2>
+              <p style={{ fontSize: '0.7rem', color: '#6b7280', margin: 0, lineHeight: 1.2 }}>Literacy & Numeracy<br/>Clinic</p>
+            </div>
           </div>
+          <button className="mobile-close-btn" onClick={() => setIsMobileMenuOpen(false)} style={{ background: 'none', border: 'none', color: '#4b5563', cursor: 'pointer' }}>
+            <X size={24} />
+          </button>
         </div>
 
         <nav className="sidebar-nav">
@@ -51,6 +66,7 @@ export default function AdminLayout({ children }) {
               <Link 
                 key={item.name} 
                 href={item.href} 
+                onClick={() => setIsMobileMenuOpen(false)}
                 className={`nav-link ${isActive ? 'active' : ''}`}
               >
                 <Icon size={18} />
@@ -71,7 +87,10 @@ export default function AdminLayout({ children }) {
       <main className="admin-main">
         {/* Topbar */}
         <header className="admin-topbar">
-          <div className="topbar-title">
+          <div className="topbar-title" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <button className="mobile-menu-btn" onClick={() => setIsMobileMenuOpen(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Menu size={24} color="#111827" />
+            </button>
             <h2 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-dark)' }}>{currentPage}</h2>
           </div>
           <div className="topbar-actions">

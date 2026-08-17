@@ -344,12 +344,29 @@ h1, h2, h3, h4, h5, h6 { font-family: 'Outfit', sans-serif; font-weight: 600; }
 @media (max-width: 768px) {
   .admin-layout { flex-direction: column; }
   .admin-sidebar { 
-    position: static; 
-    width: 100%; 
-    height: auto; 
+    position: fixed; 
+    top: 0;
+    left: -100%;
+    width: 280px; 
+    height: 100vh; 
     border-right: none;
-    border-bottom: 1px solid var(--admin-border);
+    z-index: 50;
+    transition: left 0.3s ease;
   }
+  .admin-sidebar.mobile-open {
+    left: 0;
+  }
+  .mobile-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 40;
+  }
+  .mobile-menu-btn { display: flex !important; }
+  .mobile-close-btn { display: flex !important; }
   .admin-main { 
     margin-left: 0; 
     width: 100%; 
@@ -357,8 +374,12 @@ h1, h2, h3, h4, h5, h6 { font-family: 'Outfit', sans-serif; font-weight: 600; }
   .stat-grid { grid-template-columns: 1fr; }
   .admin-content-wrapper { padding: 16px; }
   .admin-topbar { padding: 0 16px; }
-  .sidebar-nav { display: none; /* simple toggle would be better, but hide for now to save space */ }
 }
+
+/* Hide mobile specific elements on desktop */
+.mobile-menu-btn { display: none; }
+.mobile-close-btn { display: none; }
+.mobile-overlay { display: none; }
 
 /* -- GLOBAL HOVER EFFECTS -- */
 .hover-card {

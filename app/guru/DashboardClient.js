@@ -60,21 +60,21 @@ export default function DashboardClient({ schoolInfo, metrics, classesData }) {
           <div style={{ fontSize: '0.8rem', color: '#6b7280', fontWeight: 500 }}>Siswa di {schoolInfo.name}</div>
         </div>
 
-        {/* Rata-rata Literasi */}
+        {/* Tugas Literasi Terkumpul */}
         <div className="hover-card" style={{ backgroundColor: 'white', padding: '24px', borderRadius: '12px', border: '1px solid #e5e7eb', display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden' }}>
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', backgroundColor: '#059669' }}></div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
             <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#d1fae5', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#059669' }}>
               <BookOpen size={20} />
             </div>
-            <h3 style={{ color: '#4b5563', fontSize: '0.875rem', fontWeight: 600, margin: 0, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Rata-Rata Literasi</h3>
+            <h3 style={{ color: '#4b5563', fontSize: '0.875rem', fontWeight: 600, margin: 0, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Literasi Terkumpul</h3>
           </div>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '12px' }}>
-            <span style={{ fontSize: '3rem', fontWeight: 800, color: '#111827', lineHeight: 1 }}>{metrics.avgLit}</span>
-            <span style={{ color: '#6b7280', fontWeight: 600 }}>/100</span>
+            <span style={{ fontSize: '3rem', fontWeight: 800, color: '#111827', lineHeight: 1 }}>{metrics.totalLitCollected}</span>
+            <span style={{ color: '#6b7280', fontWeight: 600 }}>/ {metrics.totalLitAssigned || 0} Tugas</span>
           </div>
           <div style={{ width: '100%', height: '6px', backgroundColor: '#e5e7eb', borderRadius: '4px', overflow: 'hidden' }}>
-            <div style={{ width: `${Math.min(100, metrics.avgLit)}%`, height: '100%', backgroundColor: '#059669', borderRadius: '4px' }}></div>
+            <div style={{ width: `${metrics.totalLitAssigned > 0 ? (metrics.totalLitCollected / metrics.totalLitAssigned) * 100 : 0}%`, height: '100%', backgroundColor: '#059669', borderRadius: '4px' }}></div>
           </div>
         </div>
 
@@ -145,25 +145,37 @@ export default function DashboardClient({ schoolInfo, metrics, classesData }) {
                 <th style={{ padding: '16px 24px', fontSize: '0.75rem', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase' }}>Nama Siswa</th>
                 <th style={{ padding: '16px 24px', fontSize: '0.75rem', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase' }}>NIS</th>
                 <th style={{ padding: '16px 24px', fontSize: '0.75rem', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase' }}>Literasi</th>
-                <th style={{ padding: '16px 24px', fontSize: '0.75rem', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase' }}>Numerasi</th>
+                <th style={{ padding: '16px 24px', fontSize: '0.75rem', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase' }}>Rata-rata Numerasi</th>
+                <th style={{ padding: '16px 24px', fontSize: '0.75rem', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase' }}>Keterangan</th>
               </tr>
             </thead>
             <tbody>
               {paginatedStudents.length === 0 ? (
                 <tr>
-                  <td colSpan="4" style={{ padding: '24px', textAlign: 'center', color: '#6b7280' }}>
+                  <td colSpan="5" style={{ padding: '24px', textAlign: 'center', color: '#6b7280' }}>
                     Belum ada data siswa di kelas ini.
                   </td>
                 </tr>
               ) : (
-                paginatedStudents.map((s) => (
+                paginatedStudents.map((s) => {
+                  let badgeBg = '#f3f4f6';
+                  let badgeColor = '#374151';
+                  if (s.status.includes('Aman')) { badgeBg = '#d1fae5'; badgeColor = '#059669'; }
+                  else if (s.status.includes('Intervensi')) { badgeBg = '#fee2e2'; badgeColor = '#dc2626'; }
+                  return (
                   <tr key={s.id} style={{ borderBottom: '1px solid #e5e7eb', backgroundColor: 'white', transition: 'background-color 0.2s' }} className="hover:bg-gray-50">
                     <td style={{ padding: '16px 24px', color: '#111827', fontSize: '0.875rem', fontWeight: 600 }}>{s.name}</td>
                     <td style={{ padding: '16px 24px', color: '#4b5563', fontSize: '0.875rem' }}>{s.nis}</td>
                     <td style={{ padding: '16px 24px', color: '#004282', fontSize: '0.875rem', fontWeight: 700 }}>{s.litProgress}</td>
-                    <td style={{ padding: '16px 24px', color: '#d97706', fontSize: '0.875rem', fontWeight: 700 }}>{s.numProgress}</td>
+                    <td style={{ padding: '16px 24px', color: '#d97706', fontSize: '0.875rem', fontWeight: 700 }}>{s.numAvg}</td>
+                    <td style={{ padding: '16px 24px' }}>
+                      <span style={{ backgroundColor: badgeBg, color: badgeColor, padding: '4px 12px', borderRadius: '16px', fontSize: '0.75rem', fontWeight: 600, display: 'inline-block' }}>
+                        {s.status}
+                      </span>
+                    </td>
                   </tr>
-                ))
+                  )
+                })
               )}
             </tbody>
           </table>

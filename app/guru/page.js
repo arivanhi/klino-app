@@ -45,7 +45,7 @@ export default async function GuruDashboard() {
     return <div style={{ padding: '32px' }}>Sekolah tidak ditemukan.</div>;
   }
 
-  let totalLitScore = 0, totalLitCount = 0;
+  let totalLitCollected = 0, totalLitAssigned = 0;
   let totalNumScore = 0, totalNumCount = 0;
   let totalStudents = school.siswa.length;
   
@@ -55,29 +55,54 @@ export default async function GuruDashboard() {
       .map(s => {
         const totalLit = s.tugasLit.length;
         const doneLit = s.tugasLit.filter(t => {
-          if (t.score !== null) {
-            totalLitScore += t.score;
-            totalLitCount++;
+          if (t.fileUrl) {
+            totalLitCollected++;
             return true;
           }
           return false;
         }).length;
+        totalLitAssigned += totalLit;
         
         const totalNum = s.tugasNum.length;
-        const doneNum = s.tugasNum.filter(t => t.score !== null).length;
+        let studentNumScore = 0, studentNumCount = 0;
+        const doneNum = s.tugasNum.filter(t => {
+          if (t.score !== null) {
+            totalNumScore += t.score;
+            totalNumCount++;
+            studentNumScore += t.score;
+            studentNumCount++;
+            return true;
+          }
+          return false;
+        }).length;
 
-        s.nilaiNum.forEach(n => {
-          if (activeSemester && (n.semester !== activeSemester.jenis || n.year !== activeSemester.tahunAjaran)) return;
-          totalNumScore += n.score;
-          totalNumCount++;
-        });
+        const studentAvgNum = studentNumCount > 0 ? (studentNumScore / studentNumCount) : 0;
+        const studentLitPercent = totalLit > 0 ? (doneLit / totalLit) * 100 : 0;
+        
+        const KKM_NUM = 75; // Variabel nilai standar minimal (KKM)
+        const KKM_LIT_PERCENT = 75; // Persentase minimal kelengkapan tugas literasi
+
+        let status = "Siswa Aman";
+        const isNumUnder = studentNumCount > 0 && studentAvgNum < KKM_NUM;
+        const isLitUnder = totalLit > 0 && studentLitPercent < KKM_LIT_PERCENT;
+
+        if (isLitUnder && isNumUnder) {
+          status = "Perlu Intervensi";
+        } else if (isLitUnder) {
+          status = "Perlu Intervensi Literasi";
+        } else if (isNumUnder) {
+          status = "Perlu Intervensi Numerasi";
+        } else if (totalLit === 0 && studentNumCount === 0) {
+          status = "Belum Ada Data";
+        }
 
         return {
           id: s.id,
           name: s.name,
           nis: s.nis || '-',
           litProgress: `${doneLit} / ${totalLit}`,
-          numProgress: `${doneNum} / ${totalNum}`
+          numAvg: studentNumCount > 0 ? studentAvgNum.toFixed(1) : '-',
+          status
         };
       });
       
@@ -88,12 +113,12 @@ export default async function GuruDashboard() {
     };
   });
 
-  const avgLit = totalLitCount > 0 ? (totalLitScore / totalLitCount).toFixed(1) : '0.0';
   const avgNum = totalNumCount > 0 ? (totalNumScore / totalNumCount).toFixed(1) : '0.0';
 
   const metrics = {
     totalStudents,
-    avgLit,
+    totalLitCollected,
+    totalLitAssigned,
     avgNum
   };
 
